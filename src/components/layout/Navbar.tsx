@@ -1,8 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { LayoutDashboard, Rocket, LogOut, User as UserIcon } from 'lucide-react';
-import { getCurrentUser, logout } from '@/lib/auth-utils';
+import { LayoutDashboard, Rocket, LogOut, User as UserIcon, UserCircle } from 'lucide-react';
+import { getCurrentUser, logout, User } from '@/lib/auth-utils';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
 
 export function Navbar() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -46,20 +46,29 @@ export function Navbar() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center border hover:border-primary/50 transition-colors">
                     <UserIcon className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">@{user.username}</p>
-                      <p className="text-xs leading-none text-muted-foreground">Session active</p>
+                      <p className="text-sm font-bold leading-none">{user.firstName} {user.lastName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">@{user.username}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">Dashboard</Link>
+                    <Link href="/dashboard" className="cursor-pointer flex items-center">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer flex items-center">
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">

@@ -10,12 +10,14 @@ import { Label } from '@/components/ui/label';
 import { signup } from '@/lib/auth-utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { User as UserIcon, KeyRound } from 'lucide-react';
+import { User as UserIcon, KeyRound, IdentificationCard } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     username: '',
     password: '',
     confirmPassword: '',
@@ -34,7 +36,7 @@ export default function SignupPage() {
     }
 
     try {
-      signup(formData.username, formData.password);
+      signup(formData.username, formData.password, formData.firstName, formData.lastName);
       toast({
         title: "Account created!",
         description: "Welcome to CareerPilot. Redirecting...",
@@ -52,7 +54,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <Navbar />
-      <main className="container mx-auto px-4 py-20 flex justify-center">
+      <main className="container mx-auto px-4 py-12 flex justify-center">
         <Card className="w-full max-w-md shadow-lg border-2">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-headline font-bold">Create Account</CardTitle>
@@ -60,6 +62,28 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input 
+                    id="firstName" 
+                    placeholder="Jane" 
+                    required 
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input 
+                    id="lastName" 
+                    placeholder="Smith" 
+                    required 
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <div className="relative">

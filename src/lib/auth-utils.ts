@@ -1,6 +1,6 @@
 /**
  * Simple mock authentication utilities using localStorage.
- * Now supports username and password.
+ * Now supports username, password, and profile details.
  */
 
 const AUTH_USER_KEY = 'careerpilot_current_user';
@@ -9,6 +9,8 @@ const USERS_DB_KEY = 'careerpilot_users';
 export interface User {
   id: string;
   username: string;
+  firstName: string;
+  lastName: string;
 }
 
 interface StoredUser extends User {
@@ -27,9 +29,9 @@ export const getCurrentUser = (): User | null => {
   return user ? JSON.parse(user) : null;
 };
 
-export const signup = (username: string, password: string): User => {
-  if (!username || !password) {
-    throw new Error('Username and password are required');
+export const signup = (username: string, password: string, firstName: string, lastName: string): User => {
+  if (!username || !password || !firstName || !lastName) {
+    throw new Error('All fields are required');
   }
   
   const users = getStoredUsers();
@@ -40,13 +42,20 @@ export const signup = (username: string, password: string): User => {
   const newUser: StoredUser = { 
     id: crypto.randomUUID(), 
     username, 
-    password 
+    password,
+    firstName,
+    lastName
   };
   
   localStorage.setItem(USERS_DB_KEY, JSON.stringify([...users, newUser]));
   
   // Store session without sensitive password data
-  const sessionUser: User = { id: newUser.id, username: newUser.username };
+  const sessionUser: User = { 
+    id: newUser.id, 
+    username: newUser.username,
+    firstName: newUser.firstName,
+    lastName: newUser.lastName
+  };
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(sessionUser));
   
   return sessionUser;
@@ -63,7 +72,12 @@ export const login = (username: string, password: string): User => {
     throw new Error('Invalid username or password');
   }
   
-  const sessionUser: User = { id: user.id, username: user.username };
+  const sessionUser: User = { 
+    id: user.id, 
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName
+  };
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(sessionUser));
   
   return sessionUser;
