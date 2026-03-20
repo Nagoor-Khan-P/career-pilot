@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label';
 import { login } from '@/lib/auth-utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { KeyRound, User as UserIcon } from 'lucide-react';
+import { KeyRound, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -69,13 +70,20 @@ export default function LoginPage() {
                   <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
                     id="password" 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••••••" 
                     required 
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
               <Button type="submit" className="w-full py-6 text-lg">Sign In</Button>
