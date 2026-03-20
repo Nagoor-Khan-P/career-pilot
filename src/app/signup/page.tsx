@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,19 +10,31 @@ import { Label } from '@/components/ui/label';
 import { signup } from '@/lib/auth-utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { User as UserIcon, KeyRound } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
   });
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Passwords do not match",
+      });
+      return;
+    }
+
     try {
-      signup(formData.email, formData.name);
+      signup(formData.username, formData.password);
       toast({
         title: "Account created!",
         description: "Welcome to CareerPilot. Redirecting...",
@@ -32,7 +43,7 @@ export default function SignupPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Registration Failed",
         description: error.message,
       });
     }
@@ -50,25 +61,48 @@ export default function SignupPage() {
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Jane Doe" 
-                  required 
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="username" 
+                    placeholder="janesmith" 
+                    required 
+                    className="pl-10"
+                    value={formData.username}
+                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  required 
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                />
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    required 
+                    className="pl-10"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="confirmPassword" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    required 
+                    className="pl-10"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                  />
+                </div>
               </div>
               <Button type="submit" className="w-full py-6 text-lg">Create Account</Button>
             </form>

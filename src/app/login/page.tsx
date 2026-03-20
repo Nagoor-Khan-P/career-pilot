@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,16 +10,20 @@ import { Label } from '@/components/ui/label';
 import { login } from '@/lib/auth-utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { KeyRound, User as UserIcon } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      login(email);
+      login(formData.username, formData.password);
       toast({
         title: "Welcome back!",
         description: "Redirecting to your dashboard...",
@@ -29,7 +32,7 @@ export default function LoginPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Login Failed",
         description: error.message,
       });
     }
@@ -42,22 +45,40 @@ export default function LoginPage() {
         <Card className="w-full max-w-md shadow-lg border-2">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-headline font-bold">Sign In</CardTitle>
-            <CardDescription>Enter your email to access your cockpit</CardDescription>
+            <CardDescription>Enter your credentials to access your cockpit</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="username" 
+                    placeholder="janesmith" 
+                    required 
+                    className="pl-10"
+                    value={formData.username}
+                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                  />
+                </div>
               </div>
-              <Button type="submit" className="w-full py-6 text-lg">Continue with Email</Button>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    required 
+                    className="pl-10"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full py-6 text-lg">Sign In</Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
