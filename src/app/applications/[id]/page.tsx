@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -21,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getInterviewPreparationTips } from '@/ai/flows/interview-preparation-tips';
+import { getCurrentUser } from '@/lib/auth-utils';
 
 export default function ApplicationDetail() {
   const { id } = useParams();
@@ -39,11 +41,21 @@ export default function ApplicationDetail() {
   });
 
   useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     if (id) {
       const app = getApplicationById(id as string);
-      if (app) setApplication(app);
+      if (app) {
+        setApplication(app);
+      } else {
+        router.push('/dashboard');
+      }
     }
-  }, [id]);
+  }, [id, router]);
 
   if (!application) return null;
 
@@ -115,7 +127,7 @@ export default function ApplicationDetail() {
         <Button 
           variant="ghost" 
           className="mb-6 flex items-center gap-2" 
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/dashboard')}
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Dashboard

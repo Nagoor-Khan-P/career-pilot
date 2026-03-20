@@ -1,253 +1,113 @@
+
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
-import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Rocket, CheckCircle2, BarChart3, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Navbar } from '@/components/layout/Navbar';
 
-export default function Dashboard() {
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  
-  // New Application Form State
-  const [newApp, setNewApp] = useState({
-    companyName: '',
-    role: '',
-    submissionDate: new Date().toISOString().split('T')[0],
-    status: 'Applied' as ApplicationStatus,
-    location: '',
-  });
-
-  useEffect(() => {
-    setApplications(getApplications());
-  }, []);
-
-  const handleAddApplication = () => {
-    if (!newApp.companyName || !newApp.role) return;
-    addApplication(newApp);
-    setApplications(getApplications());
-    setIsAddDialogOpen(false);
-    setNewApp({
-      companyName: '',
-      role: '',
-      submissionDate: new Date().toISOString().split('T')[0],
-      status: 'Applied',
-      location: '',
-    });
-  };
-
-  const handleDelete = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (confirm('Are you sure you want to delete this application?')) {
-      deleteApplication(id);
-      setApplications(getApplications());
-    }
-  };
-
-  const filteredApps = applications.filter(app => {
-    const matchesSearch = app.companyName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          app.role.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || app.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
-
-  const getStatusColor = (status: ApplicationStatus) => {
-    switch (status) {
-      case 'Applied': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'OA': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'Interviewing': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'Offer': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'Rejected': return 'bg-rose-100 text-rose-700 border-rose-200';
-      case 'Ghosted': return 'bg-slate-100 text-slate-700 border-slate-200';
-      default: return 'bg-slate-100 text-slate-700';
-    }
-  };
-
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-headline font-bold text-primary">Job Applications</h1>
-            <p className="text-muted-foreground mt-1">Track and manage your journey to your next dream role.</p>
-          </div>
-          
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                <span>Add Application</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>New Job Application</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="company">Company Name</Label>
-                  <Input 
-                    id="company" 
-                    placeholder="e.g. Google" 
-                    value={newApp.companyName}
-                    onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="role">Job Role</Label>
-                  <Input 
-                    id="role" 
-                    placeholder="e.g. Senior Frontend Engineer" 
-                    value={newApp.role}
-                    onChange={(e) => setNewApp({...newApp, role: e.target.value})}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="date">Submission Date</Label>
-                    <Input 
-                      id="date" 
-                      type="date" 
-                      value={newApp.submissionDate}
-                      onChange={(e) => setNewApp({...newApp, submissionDate: e.target.value})}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="status">Initial Status</Label>
-                    <Select 
-                      value={newApp.status} 
-                      onValueChange={(val) => setNewApp({...newApp, status: val as ApplicationStatus})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Applied">Applied</SelectItem>
-                        <SelectItem value="OA">Online Assessment</SelectItem>
-                        <SelectItem value="Interviewing">Interviewing</SelectItem>
-                        <SelectItem value="Offer">Offer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="location">Location (Optional)</Label>
-                  <Input 
-                    id="location" 
-                    placeholder="e.g. Remote, New York" 
-                    value={newApp.location}
-                    onChange={(e) => setNewApp({...newApp, location: e.target.value})}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddApplication}>Save Application</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </header>
-
-        <section className="bg-card rounded-lg shadow-sm border p-4 mb-8 flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search companies or roles..." 
-              className="pl-10" 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+      
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-24 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 border border-primary/20">
+          <Sparkles className="h-4 w-4" />
+          <span>AI-Powered Job Hunting</span>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-headline font-extrabold tracking-tight text-foreground mb-6">
+          Navigate Your Career with <span className="text-primary">Precision</span>
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+          CareerPilot is the ultimate companion for job seekers. Track applications, log interviews, and get AI-powered preparation tips to land your dream role.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link href="/signup">
+            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-primary/20 transition-all">
+              Start Your Journey
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+          <Link href="/login">
+            <Button variant="outline" size="lg" className="px-8 py-6 text-lg rounded-full border-2">
+              Sign In
+            </Button>
+          </Link>
+        </div>
+        
+        {/* Dashboard Preview Placeholder */}
+        <div className="mt-20 relative">
+          <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full -z-10 opacity-30"></div>
+          <div className="bg-card border shadow-2xl rounded-2xl p-4 overflow-hidden max-w-5xl mx-auto">
+            <img 
+              src="https://picsum.photos/seed/dashboard/1200/600" 
+              alt="Dashboard Preview" 
+              className="rounded-xl border shadow-inner"
+              data-ai-hint="dashboard analytics"
             />
           </div>
-          <div className="w-full md:w-48">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                <SelectValue placeholder="Filter Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Applied">Applied</SelectItem>
-                <SelectItem value="OA">Online Assessment</SelectItem>
-                <SelectItem value="Interviewing">Interviewing</SelectItem>
-                <SelectItem value="Offer">Offer</SelectItem>
-                <SelectItem value="Rejected">Rejected</SelectItem>
-                <SelectItem value="Ghosted">Ghosted</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {filteredApps.length === 0 ? (
-          <div className="text-center py-20 bg-card rounded-lg border border-dashed border-muted-foreground/50">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-            <h3 className="text-xl font-bold text-muted-foreground">No applications found</h3>
-            <p className="text-muted-foreground max-w-xs mx-auto mt-2">
-              Start tracking your job search by adding your first application above.
-            </p>
+      {/* Features Section */}
+      <section className="bg-muted/30 py-24 border-y">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-headline font-bold mb-4">Everything you need to succeed</h2>
+            <p className="text-muted-foreground">Stop using spreadsheets and start using a cockpit built for your career.</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredApps.map((app) => (
-              <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="hover:shadow-md transition-all duration-200 group h-full flex flex-col cursor-pointer border-transparent hover:border-primary/20">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge className={getStatusColor(app.status)} variant="outline">
-                        {app.status}
-                      </Badge>
-                      <button 
-                        onClick={(e) => handleDelete(app.id, e)}
-                        className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-accent" />
-                      {app.companyName}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-1 font-medium text-foreground/80">
-                      <Briefcase className="h-4 w-4" />
-                      {app.role}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-sm text-muted-foreground pt-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>Applied: {new Date(app.submissionDate).toLocaleDateString()}</span>
-                    </div>
-                    {app.location && (
-                      <div className="flex items-center gap-2">
-                        <span className="inline-block w-4 text-center">📍</span>
-                        <span>{app.location}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="pt-0 pb-4">
-                    <div className="w-full flex justify-between items-center text-xs font-semibold text-primary/80">
-                      <span>{app.events.length} Events Logged</span>
-                      <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </CardFooter>
-                </Card>
-              </Link>
-            ))}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <FeatureCard 
+              icon={<Rocket className="h-8 w-8 text-accent" />}
+              title="Application Tracker"
+              description="Monitor every stage of your job hunt from initial application to final offer."
+            />
+            <FeatureCard 
+              icon={<BarChart3 className="h-8 w-8 text-primary" />}
+              title="Interview Timeline"
+              description="Keep detailed logs of every interaction, interview question, and feedback received."
+            />
+            <FeatureCard 
+              icon={<Sparkles className="h-8 w-8 text-amber-500" />}
+              title="AI Preparation"
+              description="Get tailored interview tips and company insights generated specifically for your role."
+            />
           </div>
-        )}
-      </main>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4 flex flex-col items-center">
+          <div className="flex items-center gap-2 mb-4 text-emerald-600 font-semibold">
+            <ShieldCheck className="h-6 w-6" />
+            <span>Secure & Private</span>
+          </div>
+          <h2 className="text-3xl font-bold text-center mb-12">Take flight today.</h2>
+          <Link href="/signup">
+            <Button size="lg" className="rounded-full px-12">Get Started Free</Button>
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t py-12">
+        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
+          <p>© {new Date().getFullYear()} CareerPilot. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <div className="bg-card p-8 rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">{description}</p>
     </div>
   );
 }
