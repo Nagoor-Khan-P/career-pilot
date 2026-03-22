@@ -38,7 +38,7 @@ export function Navbar() {
         
         <div className="flex items-center gap-6">
           {user ? (
-            <>
+            <div className="flex items-center gap-4">
               {!isDashboard && (
                 <Link 
                   href="/dashboard" 
@@ -49,38 +49,41 @@ export function Navbar() {
                 </Link>
               )}
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative flex items-center gap-2 px-2 h-10 rounded-full bg-muted border hover:border-primary/50 transition-colors cursor-pointer group">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      <UserIcon className="h-4 w-4" />
-                    </div>
-                    <span className="text-sm font-semibold pr-1 group-hover:text-primary transition-colors">
-                      {user.firstName} {user.lastName}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-xs leading-none text-muted-foreground">@{user.username}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer flex items-center">
-                      <UserCircle className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold text-foreground/80 hidden sm:inline-block">
+                  {user.firstName} {user.lastName}
+                </span>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-muted border hover:border-primary/50 transition-colors cursor-pointer p-0 group">
+                      <div className="h-full w-full rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                        <UserIcon className="h-5 w-5" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-xs leading-none text-muted-foreground">@{user.username}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer flex items-center">
+                        <UserCircle className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           ) : (
             <div className="flex items-center gap-4">
               <Link href="/login">
