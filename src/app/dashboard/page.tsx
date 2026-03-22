@@ -7,7 +7,7 @@ import { JobApplication, ApplicationStatus } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search } from 'lucide-react';
+import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { searchCompanies } from '@/ai/flows/search-companies';
 
 const COMMON_COMPANIES = [
   "Google", "Amazon", "Microsoft", "Meta", "TCS", 
@@ -63,6 +64,10 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   
+  // AI Suggestions State
+  const [aiCompanySuggestions, setAiCompanySuggestions] = useState<string[]>([]);
+  const [isSearchingCompanies, setIsSearchingCompanies] = useState(false);
+
   // New Application Form State
   const [newApp, setNewApp] = useState({
     companyName: '',
@@ -80,6 +85,27 @@ export default function Dashboard() {
     }
     setApplications(getApplications());
   }, [router]);
+
+  // Real-time company search with debounce
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (newApp.companyName.length >= 2) {
+        setIsSearchingCompanies(true);
+        try {
+          const result = await searchCompanies(newApp.companyName);
+          setAiCompanySuggestions(result.companies);
+        } catch (error) {
+          console.error("Company search failed", error);
+        } finally {
+          setIsSearchingCompanies(false);
+        }
+      } else {
+        setAiCompanySuggestions([]);
+      }
+    }, 600); // 600ms debounce
+
+    return () => clearTimeout(timer);
+  }, [newApp.companyName]);
 
   const handleAddApplication = () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
@@ -123,14 +149,17 @@ export default function Dashboard() {
     }
   };
 
-  // Filtering suggestions for inputs
+  // Combined suggestions
   const companySuggestions = useMemo(() => {
-    if (!newApp.companyName || newApp.companyName.length === 0) return [];
-    return COMMON_COMPANIES.filter(c => 
+    const local = newApp.companyName ? COMMON_COMPANIES.filter(c => 
       c.toLowerCase().includes(newApp.companyName.toLowerCase()) && 
       c.toLowerCase() !== newApp.companyName.toLowerCase()
-    );
-  }, [newApp.companyName]);
+    ) : [];
+    
+    // Merge AI suggestions avoiding duplicates
+    const combined = Array.from(new Set([...local, ...aiCompanySuggestions]));
+    return combined;
+  }, [newApp.companyName, aiCompanySuggestions]);
 
   const locationSuggestions = useMemo(() => {
     if (!newApp.location || newApp.location.length === 0) return [];
@@ -179,7 +208,10 @@ export default function Dashboard() {
               </DialogHeader>
               <div className="grid gap-6 py-4">
                 <div className="grid gap-2 relative">
-                  <Label htmlFor="company">Company Name *</Label>
+                  <Label htmlFor="company" className="flex items-center gap-2">
+                    Company Name *
+                    {isSearchingCompanies && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  </Label>
                   <Input 
                     id="company" 
                     placeholder="e.g. Google" 
@@ -189,14 +221,17 @@ export default function Dashboard() {
                     onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
                   />
                   {companySuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto">
                       {companySuggestions.map(suggestion => (
                         <div 
                           key={suggestion}
-                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center justify-between group"
                           onClick={() => setNewApp({...newApp, companyName: suggestion})}
                         >
-                          {suggestion}
+                          <span>{suggestion}</span>
+                          {aiCompanySuggestions.includes(suggestion) && (
+                            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">AI Suggested</span>
+                          )}
                         </div>
                       ))}
                     </div>
