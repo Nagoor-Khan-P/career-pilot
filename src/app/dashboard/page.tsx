@@ -7,7 +7,7 @@ import { JobApplication, ApplicationStatus } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search, Loader2 } from 'lucide-react';
+import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -16,13 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { searchCompanies } from '@/ai/flows/search-companies';
 
 const COMMON_COMPANIES = [
-  "Google", "Amazon", "Microsoft", "Meta", "TCS", 
-  "Infosys", "Wipro", "Zomato", "Swiggy", "Flipkart", 
-  "Paytm", "CRED", "Ola", "Freshworks", "Reliance Jio"
+  "Google", "Amazon", "Microsoft", "Meta", "Apple", "Netflix", "Tesla",
+  "TCS", "Infosys", "Wipro", "Zomato", "Swiggy", "Flipkart", 
+  "Paytm", "CRED", "Ola", "Freshworks", "Reliance Jio", "HCLTech",
+  "Adobe", "Salesforce", "Intel", "IBM", "Oracle", "Cisco",
+  "Uber", "Lyft", "Airbnb", "Stripe", "Coinbase", "Byju's", "Unacademy"
 ];
 
 const COMMON_LOCATIONS = [
@@ -64,10 +64,6 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   
-  // AI Suggestions State
-  const [aiCompanySuggestions, setAiCompanySuggestions] = useState<string[]>([]);
-  const [isSearchingCompanies, setIsSearchingCompanies] = useState(false);
-
   // New Application Form State
   const [newApp, setNewApp] = useState({
     companyName: '',
@@ -85,27 +81,6 @@ export default function Dashboard() {
     }
     setApplications(getApplications());
   }, [router]);
-
-  // Real-time company search with debounce
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (newApp.companyName.length >= 2) {
-        setIsSearchingCompanies(true);
-        try {
-          const result = await searchCompanies(newApp.companyName);
-          setAiCompanySuggestions(result.companies);
-        } catch (error) {
-          console.error("Company search failed", error);
-        } finally {
-          setIsSearchingCompanies(false);
-        }
-      } else {
-        setAiCompanySuggestions([]);
-      }
-    }, 600); // 600ms debounce
-
-    return () => clearTimeout(timer);
-  }, [newApp.companyName]);
 
   const handleAddApplication = () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
@@ -149,24 +124,20 @@ export default function Dashboard() {
     }
   };
 
-  // Combined suggestions
   const companySuggestions = useMemo(() => {
-    const local = newApp.companyName ? COMMON_COMPANIES.filter(c => 
+    if (!newApp.companyName || newApp.companyName.length === 0) return [];
+    return COMMON_COMPANIES.filter(c => 
       c.toLowerCase().includes(newApp.companyName.toLowerCase()) && 
       c.toLowerCase() !== newApp.companyName.toLowerCase()
-    ) : [];
-    
-    // Merge AI suggestions avoiding duplicates
-    const combined = Array.from(new Set([...local, ...aiCompanySuggestions]));
-    return combined;
-  }, [newApp.companyName, aiCompanySuggestions]);
+    ).slice(0, 6);
+  }, [newApp.companyName]);
 
   const locationSuggestions = useMemo(() => {
     if (!newApp.location || newApp.location.length === 0) return [];
     return COMMON_LOCATIONS.filter(l => 
       l.toLowerCase().includes(newApp.location.toLowerCase()) && 
       l.toLowerCase() !== newApp.location.toLowerCase()
-    );
+    ).slice(0, 6);
   }, [newApp.location]);
 
   const roleSuggestions = useMemo(() => {
@@ -174,7 +145,7 @@ export default function Dashboard() {
     return COMMON_ROLES.filter(r => 
       r.toLowerCase().includes(newApp.role.toLowerCase()) && 
       r.toLowerCase() !== newApp.role.toLowerCase()
-    );
+    ).slice(0, 6);
   }, [newApp.role]);
 
   const isFormValid = newApp.companyName.trim() !== '' && 
@@ -208,10 +179,7 @@ export default function Dashboard() {
               </DialogHeader>
               <div className="grid gap-6 py-4">
                 <div className="grid gap-2 relative">
-                  <Label htmlFor="company" className="flex items-center gap-2">
-                    Company Name *
-                    {isSearchingCompanies && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                  </Label>
+                  <Label htmlFor="company">Company Name *</Label>
                   <Input 
                     id="company" 
                     placeholder="e.g. Google" 
@@ -225,13 +193,10 @@ export default function Dashboard() {
                       {companySuggestions.map(suggestion => (
                         <div 
                           key={suggestion}
-                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center justify-between group"
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
                           onClick={() => setNewApp({...newApp, companyName: suggestion})}
                         >
-                          <span>{suggestion}</span>
-                          {aiCompanySuggestions.includes(suggestion) && (
-                            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">AI Suggested</span>
-                          )}
+                          {suggestion}
                         </div>
                       ))}
                     </div>
