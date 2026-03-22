@@ -1,12 +1,20 @@
 
 "use client";
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Rocket, CheckCircle2, BarChart3, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Rocket, BarChart3, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { getCurrentUser, User } from '@/lib/auth-utils';
 
 export default function LandingPage() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    setUser(getCurrentUser());
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -24,17 +32,28 @@ export default function LandingPage() {
           CareerPilot is the ultimate companion for job seekers. Track applications, log interviews, and get AI-powered preparation tips to land your dream role.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/signup">
-            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-primary/20 transition-all">
-              Start Your Journey
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="outline" size="lg" className="px-8 py-6 text-lg rounded-full border-2">
-              Sign In
-            </Button>
-          </Link>
+          {user ? (
+            <Link href="/dashboard">
+              <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-primary/20 transition-all">
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/signup">
+                <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-primary/20 transition-all">
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" size="lg" className="px-8 py-6 text-lg rounded-full border-2">
+                  Sign In
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
         
         {/* Dashboard Preview Placeholder */}
@@ -87,8 +106,10 @@ export default function LandingPage() {
             <span>Secure & Private</span>
           </div>
           <h2 className="text-3xl font-bold text-center mb-12">Take flight today.</h2>
-          <Link href="/signup">
-            <Button size="lg" className="rounded-full px-12">Get Started Free</Button>
+          <Link href={user ? "/dashboard" : "/signup"}>
+            <Button size="lg" className="rounded-full px-12">
+              {user ? "Back to Dashboard" : "Get Started Free"}
+            </Button>
           </Link>
         </div>
       </section>
