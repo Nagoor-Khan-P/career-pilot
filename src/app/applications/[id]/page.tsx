@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -17,6 +16,17 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, 
   DialogTrigger, DialogFooter, DialogDescription 
 } from '@/components/ui/dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -82,14 +92,12 @@ export default function ApplicationDetail() {
   };
 
   const handleDeleteEvent = (eventId: string) => {
-    if (confirm('Delete this event?')) {
-      const updated = {
-        ...application,
-        events: application.events.filter(e => e.id !== eventId),
-      };
-      updateApplication(updated);
-      setApplication(updated);
-    }
+    const updated = {
+      ...application,
+      events: application.events.filter(e => e.id !== eventId),
+    };
+    updateApplication(updated);
+    setApplication(updated);
   };
 
   const generateAiTips = async () => {
@@ -286,12 +294,32 @@ export default function ApplicationDetail() {
                 <Card className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
                     <div className="text-xs font-bold text-accent uppercase tracking-wider">{new Date(event.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                    <button 
-                      onClick={() => handleDeleteEvent(event.id)}
-                      className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button 
+                          className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete this event?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove this <strong>{event.type}</strong> from your timeline? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                   <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
