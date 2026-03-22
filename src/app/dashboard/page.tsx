@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const COMMON_COMPANIES = [
   "Google", "Amazon", "Microsoft", "Meta", "TCS", 
@@ -106,6 +107,23 @@ export default function Dashboard() {
     }
   };
 
+  // Filtering suggestions for inputs
+  const companySuggestions = useMemo(() => {
+    if (!newApp.companyName || newApp.companyName.length === 0) return [];
+    return COMMON_COMPANIES.filter(c => 
+      c.toLowerCase().includes(newApp.companyName.toLowerCase()) && 
+      c.toLowerCase() !== newApp.companyName.toLowerCase()
+    );
+  }, [newApp.companyName]);
+
+  const locationSuggestions = useMemo(() => {
+    if (!newApp.location || newApp.location.length === 0) return [];
+    return COMMON_LOCATIONS.filter(l => 
+      l.toLowerCase().includes(newApp.location.toLowerCase()) && 
+      l.toLowerCase() !== newApp.location.toLowerCase()
+    );
+  }, [newApp.location]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -128,20 +146,28 @@ export default function Dashboard() {
                 <DialogTitle>New Job Application</DialogTitle>
               </DialogHeader>
               <div className="grid gap-6 py-4">
-                <div className="grid gap-2">
+                <div className="grid gap-2 relative">
                   <Label htmlFor="company">Company Name</Label>
                   <Input 
                     id="company" 
-                    list="company-options"
                     placeholder="e.g. Google or type custom" 
                     value={newApp.companyName}
+                    autoComplete="off"
                     onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
                   />
-                  <datalist id="company-options">
-                    {COMMON_COMPANIES.map(company => (
-                      <option key={company} value={company} />
-                    ))}
-                  </datalist>
+                  {companySuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                      {companySuggestions.map(suggestion => (
+                        <div 
+                          key={suggestion}
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                          onClick={() => setNewApp({...newApp, companyName: suggestion})}
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {COMMON_COMPANIES.slice(0, 6).map(company => (
                       <Badge 
@@ -192,20 +218,28 @@ export default function Dashboard() {
                     </Select>
                   </div>
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 relative">
                   <Label htmlFor="location">Location (Optional)</Label>
                   <Input 
                     id="location" 
-                    list="location-options"
                     placeholder="e.g. Bengaluru, KA or type custom" 
                     value={newApp.location}
+                    autoComplete="off"
                     onChange={(e) => setNewApp({...newApp, location: e.target.value})}
                   />
-                  <datalist id="location-options">
-                    {COMMON_LOCATIONS.map(loc => (
-                      <option key={loc} value={loc} />
-                    ))}
-                  </datalist>
+                  {locationSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                      {locationSuggestions.map(suggestion => (
+                        <div 
+                          key={suggestion}
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                          onClick={() => setNewApp({...newApp, location: suggestion})}
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {COMMON_LOCATIONS.slice(0, 6).map(loc => (
                       <Badge 
