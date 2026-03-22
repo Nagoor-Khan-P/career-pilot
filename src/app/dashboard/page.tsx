@@ -18,15 +18,25 @@ import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
 
 const COMMON_COMPANIES = [
-  "Google", "Amazon", "Microsoft", "Meta", "Apple", 
-  "Netflix", "Stripe", "Uber", "Airbnb", "OpenAI", 
-  "SpaceX", "Tesla", "Adobe", "Salesforce"
+  "Google", "Amazon", "Microsoft", "Meta", "TCS", 
+  "Infosys", "Wipro", "Zomato", "Swiggy", "Flipkart", 
+  "Paytm", "CRED", "Ola", "Freshworks", "Reliance Jio"
 ];
 
 const COMMON_LOCATIONS = [
-  "Remote", "New York, NY", "San Francisco, CA", "Austin, TX", 
-  "Seattle, WA", "London, UK", "Berlin, Germany", "Bangalore, India", 
-  "Singapore", "Sydney, Australia", "Toronto, Canada"
+  "Remote", 
+  "Bengaluru, KA", 
+  "Hyderabad, TS", 
+  "Pune, MH", 
+  "Mumbai, MH", 
+  "Chennai, TN", 
+  "Gurgaon, HR", 
+  "Noida, UP", 
+  "New Delhi, DL", 
+  "Kolkata, WB", 
+  "Ahmedabad, GJ", 
+  "Kochi, KL",
+  "Chandigarh, CH"
 ];
 
 export default function Dashboard() {
