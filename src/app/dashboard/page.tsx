@@ -40,6 +40,22 @@ const COMMON_LOCATIONS = [
   "Chandigarh, CH"
 ];
 
+const COMMON_ROLES = [
+  "Software Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Data Scientist",
+  "Product Manager",
+  "UI/UX Designer",
+  "QA Engineer",
+  "DevOps Engineer",
+  "Systems Architect",
+  "Mobile Developer",
+  "Machine Learning Engineer",
+  "Engineering Manager"
+];
+
 export default function Dashboard() {
   const router = useRouter();
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -124,6 +140,14 @@ export default function Dashboard() {
     );
   }, [newApp.location]);
 
+  const roleSuggestions = useMemo(() => {
+    if (!newApp.role || newApp.role.length === 0) return [];
+    return COMMON_ROLES.filter(r => 
+      r.toLowerCase().includes(newApp.role.toLowerCase()) && 
+      r.toLowerCase() !== newApp.role.toLowerCase()
+    );
+  }, [newApp.role]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -169,14 +193,28 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 relative">
                   <Label htmlFor="role">Job Role</Label>
                   <Input 
                     id="role" 
                     placeholder="e.g. Senior Frontend Engineer" 
                     value={newApp.role}
+                    autoComplete="off"
                     onChange={(e) => setNewApp({...newApp, role: e.target.value})}
                   />
+                  {roleSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                      {roleSuggestions.map(suggestion => (
+                        <div 
+                          key={suggestion}
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                          onClick={() => setNewApp({...newApp, role: suggestion})}
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
