@@ -82,7 +82,7 @@ export default function Dashboard() {
   }, [router]);
 
   const handleAddApplication = () => {
-    if (!newApp.companyName || !newApp.role) return;
+    if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
     addApplication(newApp);
     setApplications(getApplications());
     setIsAddDialogOpen(false);
@@ -148,6 +148,11 @@ export default function Dashboard() {
     );
   }, [newApp.role]);
 
+  const isFormValid = newApp.companyName.trim() !== '' && 
+                      newApp.role.trim() !== '' && 
+                      newApp.submissionDate !== '' && 
+                      newApp.status !== '';
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -168,15 +173,19 @@ export default function Dashboard() {
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>New Job Application</DialogTitle>
+                <DialogDescription>
+                  Enter the details of your new application. Fields marked with * are mandatory.
+                </DialogDescription>
               </DialogHeader>
               <div className="grid gap-6 py-4">
                 <div className="grid gap-2 relative">
-                  <Label htmlFor="company">Company Name</Label>
+                  <Label htmlFor="company">Company Name *</Label>
                   <Input 
                     id="company" 
-                    placeholder="e.g. Google or type custom" 
+                    placeholder="e.g. Google" 
                     value={newApp.companyName}
                     autoComplete="off"
+                    required
                     onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
                   />
                   {companySuggestions.length > 0 && (
@@ -194,12 +203,13 @@ export default function Dashboard() {
                   )}
                 </div>
                 <div className="grid gap-2 relative">
-                  <Label htmlFor="role">Job Role</Label>
+                  <Label htmlFor="role">Job Role *</Label>
                   <Input 
                     id="role" 
                     placeholder="e.g. Senior Frontend Engineer" 
                     value={newApp.role}
                     autoComplete="off"
+                    required
                     onChange={(e) => setNewApp({...newApp, role: e.target.value})}
                   />
                   {roleSuggestions.length > 0 && (
@@ -218,16 +228,17 @@ export default function Dashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="date">Submission Date</Label>
+                    <Label htmlFor="date">Submission Date *</Label>
                     <Input 
                       id="date" 
                       type="date" 
+                      required
                       value={newApp.submissionDate}
                       onChange={(e) => setNewApp({...newApp, submissionDate: e.target.value})}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="status">Initial Status</Label>
+                    <Label htmlFor="status">Initial Status *</Label>
                     <Select 
                       value={newApp.status} 
                       onValueChange={(val) => setNewApp({...newApp, status: val as ApplicationStatus})}
@@ -248,7 +259,7 @@ export default function Dashboard() {
                   <Label htmlFor="location">Location (Optional)</Label>
                   <Input 
                     id="location" 
-                    placeholder="e.g. Bengaluru, KA or type custom" 
+                    placeholder="e.g. Bengaluru, KA" 
                     value={newApp.location}
                     autoComplete="off"
                     onChange={(e) => setNewApp({...newApp, location: e.target.value})}
@@ -270,7 +281,13 @@ export default function Dashboard() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="cursor-pointer">Cancel</Button>
-                <Button onClick={handleAddApplication} className="cursor-pointer">Save Application</Button>
+                <Button 
+                  onClick={handleAddApplication} 
+                  className="cursor-pointer"
+                  disabled={!isFormValid}
+                >
+                  Save Application
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
