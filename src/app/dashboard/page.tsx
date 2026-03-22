@@ -118,31 +118,42 @@ export default function Dashboard() {
           
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
+              <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2 cursor-pointer">
                 <Plus className="h-4 w-4" />
                 <span>Add Application</span>
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>New Job Application</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-6 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="company">Company Name</Label>
-                  <Select 
-                    value={newApp.companyName} 
-                    onValueChange={(val) => setNewApp({...newApp, companyName: val})}
-                  >
-                    <SelectTrigger id="company">
-                      <SelectValue placeholder="Select a company" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMON_COMPANIES.map(company => (
-                        <SelectItem key={company} value={company}>{company}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input 
+                    id="company" 
+                    list="company-options"
+                    placeholder="e.g. Google or type custom" 
+                    value={newApp.companyName}
+                    onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
+                  />
+                  <datalist id="company-options">
+                    {COMMON_COMPANIES.map(company => (
+                      <option key={company} value={company} />
+                    ))}
+                  </datalist>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {COMMON_COMPANIES.slice(0, 6).map(company => (
+                      <Badge 
+                        key={company} 
+                        variant="secondary" 
+                        className="cursor-pointer hover:bg-primary hover:text-white transition-colors py-0 text-[10px]"
+                        onClick={() => setNewApp({...newApp, companyName: company})}
+                      >
+                        {company}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">Job Role</Label>
@@ -169,38 +180,49 @@ export default function Dashboard() {
                       value={newApp.status} 
                       onValueChange={(val) => setNewApp({...newApp, status: val as ApplicationStatus})}
                     >
-                      <SelectTrigger id="status">
+                      <SelectTrigger id="status" className="cursor-pointer">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Applied">Applied</SelectItem>
-                        <SelectItem value="OA">Online Assessment</SelectItem>
-                        <SelectItem value="Interviewing">Interviewing</SelectItem>
-                        <SelectItem value="Offer">Offer</SelectItem>
+                        <SelectItem value="Applied" className="cursor-pointer">Applied</SelectItem>
+                        <SelectItem value="OA" className="cursor-pointer">Online Assessment</SelectItem>
+                        <SelectItem value="Interviewing" className="cursor-pointer">Interviewing</SelectItem>
+                        <SelectItem value="Offer" className="cursor-pointer">Offer</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Location (Optional)</Label>
-                  <Select 
-                    value={newApp.location} 
-                    onValueChange={(val) => setNewApp({...newApp, location: val})}
-                  >
-                    <SelectTrigger id="location">
-                      <SelectValue placeholder="Select a location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMON_LOCATIONS.map(loc => (
-                        <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input 
+                    id="location" 
+                    list="location-options"
+                    placeholder="e.g. Bengaluru, KA or type custom" 
+                    value={newApp.location}
+                    onChange={(e) => setNewApp({...newApp, location: e.target.value})}
+                  />
+                  <datalist id="location-options">
+                    {COMMON_LOCATIONS.map(loc => (
+                      <option key={loc} value={loc} />
+                    ))}
+                  </datalist>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {COMMON_LOCATIONS.slice(0, 6).map(loc => (
+                      <Badge 
+                        key={loc} 
+                        variant="secondary" 
+                        className="cursor-pointer hover:bg-primary hover:text-white transition-colors py-0 text-[10px]"
+                        onClick={() => setNewApp({...newApp, location: loc})}
+                      >
+                        {loc}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddApplication}>Save Application</Button>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="cursor-pointer">Cancel</Button>
+                <Button onClick={handleAddApplication} className="cursor-pointer">Save Application</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -218,18 +240,18 @@ export default function Dashboard() {
           </div>
           <div className="w-full md:w-48">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="flex items-center gap-2">
+              <SelectTrigger className="flex items-center gap-2 cursor-pointer">
                 <Filter className="h-4 w-4" />
                 <SelectValue placeholder="Filter Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Applied">Applied</SelectItem>
-                <SelectItem value="OA">Online Assessment</SelectItem>
-                <SelectItem value="Interviewing">Interviewing</SelectItem>
-                <SelectItem value="Offer">Offer</SelectItem>
-                <SelectItem value="Rejected">Rejected</SelectItem>
-                <SelectItem value="Ghosted">Ghosted</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">All Statuses</SelectItem>
+                <SelectItem value="Applied" className="cursor-pointer">Applied</SelectItem>
+                <SelectItem value="OA" className="cursor-pointer">Online Assessment</SelectItem>
+                <SelectItem value="Interviewing" className="cursor-pointer">Interviewing</SelectItem>
+                <SelectItem value="Offer" className="cursor-pointer">Offer</SelectItem>
+                <SelectItem value="Rejected" className="cursor-pointer">Rejected</SelectItem>
+                <SelectItem value="Ghosted" className="cursor-pointer">Ghosted</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -255,7 +277,7 @@ export default function Dashboard() {
                       </Badge>
                       <button 
                         onClick={(e) => handleDelete(app.id, e)}
-                        className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
