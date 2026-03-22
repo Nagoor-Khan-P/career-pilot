@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
@@ -7,7 +8,6 @@ import { getApplications, addApplication, deleteApplication } from '@/lib/storag
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search } from 'lucide-react';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { 
@@ -32,7 +32,8 @@ const COMMON_COMPANIES = [
   "TCS", "Infosys", "Wipro", "Zomato", "Swiggy", "Flipkart", 
   "Paytm", "CRED", "Ola", "Freshworks", "Reliance Jio", "HCLTech",
   "Adobe", "Salesforce", "Intel", "IBM", "Oracle", "Cisco",
-  "Uber", "Lyft", "Airbnb", "Stripe", "Coinbase", "Byju's", "Unacademy"
+  "Uber", "Lyft", "Airbnb", "Stripe", "Coinbase", "Byju's", "Unacademy",
+  "Morgan Stanley", "Goldman Sachs", "J.P. Morgan", "Deloitte", "Accenture", "McKinsey & Company"
 ];
 
 const COMMON_LOCATIONS = [
@@ -45,10 +46,7 @@ const COMMON_LOCATIONS = [
   "Gurgaon, HR", 
   "Noida, UP", 
   "New Delhi, DL", 
-  "Kolkata, WB", 
-  "Ahmedabad, GJ", 
-  "Kochi, KL",
-  "Chandigarh, CH"
+  "Kochi, KL"
 ];
 
 const COMMON_ROLES = [
@@ -61,10 +59,8 @@ const COMMON_ROLES = [
   "UI/UX Designer",
   "QA Engineer",
   "DevOps Engineer",
-  "Systems Architect",
   "Mobile Developer",
-  "Machine Learning Engineer",
-  "Engineering Manager"
+  "Machine Learning Engineer"
 ];
 
 export default function Dashboard() {
@@ -74,7 +70,6 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   
-  // New Application Form State
   const [newApp, setNewApp] = useState({
     companyName: '',
     role: '',
@@ -131,27 +126,27 @@ export default function Dashboard() {
   };
 
   const companySuggestions = useMemo(() => {
-    if (!newApp.companyName || newApp.companyName.length === 0) return [];
+    if (!newApp.companyName) return [];
     return COMMON_COMPANIES.filter(c => 
       c.toLowerCase().includes(newApp.companyName.toLowerCase()) && 
       c.toLowerCase() !== newApp.companyName.toLowerCase()
-    ).slice(0, 6);
+    ).slice(0, 5);
   }, [newApp.companyName]);
 
   const locationSuggestions = useMemo(() => {
-    if (!newApp.location || newApp.location.length === 0) return [];
+    if (!newApp.location) return [];
     return COMMON_LOCATIONS.filter(l => 
       l.toLowerCase().includes(newApp.location.toLowerCase()) && 
       l.toLowerCase() !== newApp.location.toLowerCase()
-    ).slice(0, 6);
+    ).slice(0, 5);
   }, [newApp.location]);
 
   const roleSuggestions = useMemo(() => {
-    if (!newApp.role || newApp.role.length === 0) return [];
+    if (!newApp.role) return [];
     return COMMON_ROLES.filter(r => 
       r.toLowerCase().includes(newApp.role.toLowerCase()) && 
       r.toLowerCase() !== newApp.role.toLowerCase()
-    ).slice(0, 6);
+    ).slice(0, 5);
   }, [newApp.role]);
 
   const isFormValid = newApp.companyName.trim() !== '' && 
@@ -171,7 +166,7 @@ export default function Dashboard() {
           
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2 cursor-pointer">
+              <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2 cursor-pointer shadow-md">
                 <Plus className="h-4 w-4" />
                 <span>Add Application</span>
               </Button>
@@ -195,7 +190,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
                   />
                   {companySuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 overflow-hidden">
                       {companySuggestions.map(suggestion => (
                         <div 
                           key={suggestion}
@@ -219,7 +214,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewApp({...newApp, role: e.target.value})}
                   />
                   {roleSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 overflow-hidden">
                       {roleSuggestions.map(suggestion => (
                         <div 
                           key={suggestion}
@@ -271,7 +266,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewApp({...newApp, location: e.target.value})}
                   />
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full z-50 bg-popover border rounded-md shadow-lg mt-1 overflow-hidden">
                       {locationSuggestions.map(suggestion => (
                         <div 
                           key={suggestion}
@@ -339,43 +334,50 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredApps.map((app) => (
-              <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="hover:shadow-md transition-all duration-200 group h-full flex flex-col cursor-pointer border-transparent hover:border-primary/20">
+              <div 
+                key={app.id}
+                className="group relative"
+              >
+                <Card 
+                  className="hover:shadow-md transition-all duration-200 h-full flex flex-col cursor-pointer border-transparent hover:border-primary/20"
+                  onClick={() => router.push(`/applications/${app.id}`)}
+                >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start mb-2">
                       <Badge className={getStatusColor(app.status)} variant="outline">
                         {app.status}
                       </Badge>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <button 
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete the application for <strong>{app.companyName}</strong> and all its logged events. This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDelete(app.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Application?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete the application for <strong>{app.companyName}</strong>? This will remove all associated interview history and cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDelete(app.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                     <CardTitle className="text-xl group-hover:text-primary transition-colors flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-accent" />
@@ -405,7 +407,7 @@ export default function Dashboard() {
                     </div>
                   </CardFooter>
                 </Card>
-              </Link>
+              </div>
             ))}
           </div>
         )}
