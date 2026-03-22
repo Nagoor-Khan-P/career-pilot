@@ -42,7 +42,7 @@ export function Navbar() {
               {!isDashboard && (
                 <Link 
                   href="/dashboard" 
-                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors hidden sm:flex"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors hidden md:flex"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   <span>Dashboard</span>
@@ -51,8 +51,13 @@ export function Navbar() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-muted flex items-center justify-center border hover:border-primary/50 transition-colors">
-                    <UserIcon className="h-5 w-5" />
+                  <Button variant="ghost" className="relative flex items-center gap-2 px-2 h-10 rounded-full bg-muted border hover:border-primary/50 transition-colors cursor-pointer group">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <UserIcon className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-semibold pr-1 group-hover:text-primary transition-colors">
+                      {user.firstName} {user.lastName}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
