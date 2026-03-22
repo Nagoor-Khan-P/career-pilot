@@ -17,6 +17,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
 
+const COMMON_COMPANIES = [
+  "Google", "Amazon", "Microsoft", "Meta", "Apple", 
+  "Netflix", "Stripe", "Uber", "Airbnb", "OpenAI", 
+  "SpaceX", "Tesla", "Adobe", "Salesforce"
+];
+
+const COMMON_LOCATIONS = [
+  "Remote", "New York, NY", "San Francisco, CA", "Austin, TX", 
+  "Seattle, WA", "London, UK", "Berlin, Germany", "Bangalore, India", 
+  "Singapore", "Sydney, Australia", "Toronto, Canada"
+];
+
 export default function Dashboard() {
   const router = useRouter();
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -108,12 +120,19 @@ export default function Dashboard() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="company">Company Name</Label>
-                  <Input 
-                    id="company" 
-                    placeholder="e.g. Google" 
-                    value={newApp.companyName}
-                    onChange={(e) => setNewApp({...newApp, companyName: e.target.value})}
-                  />
+                  <Select 
+                    value={newApp.companyName} 
+                    onValueChange={(val) => setNewApp({...newApp, companyName: val})}
+                  >
+                    <SelectTrigger id="company">
+                      <SelectValue placeholder="Select a company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_COMPANIES.map(company => (
+                        <SelectItem key={company} value={company}>{company}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">Job Role</Label>
@@ -140,7 +159,7 @@ export default function Dashboard() {
                       value={newApp.status} 
                       onValueChange={(val) => setNewApp({...newApp, status: val as ApplicationStatus})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="status">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -154,12 +173,19 @@ export default function Dashboard() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Location (Optional)</Label>
-                  <Input 
-                    id="location" 
-                    placeholder="e.g. Remote, New York" 
-                    value={newApp.location}
-                    onChange={(e) => setNewApp({...newApp, location: e.target.value})}
-                  />
+                  <Select 
+                    value={newApp.location} 
+                    onValueChange={(val) => setNewApp({...newApp, location: val})}
+                  >
+                    <SelectTrigger id="location">
+                      <SelectValue placeholder="Select a location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_LOCATIONS.map(loc => (
+                        <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <DialogFooter>
