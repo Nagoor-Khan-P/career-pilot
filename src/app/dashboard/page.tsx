@@ -168,18 +168,6 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {COMMON_COMPANIES.slice(0, 6).map(company => (
-                      <Badge 
-                        key={company} 
-                        variant="secondary" 
-                        className="cursor-pointer hover:bg-primary hover:text-white transition-colors py-0 text-[10px]"
-                        onClick={() => setNewApp({...newApp, companyName: company})}
-                      >
-                        {company}
-                      </Badge>
-                    ))}
-                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">Job Role</Label>
@@ -240,18 +228,6 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {COMMON_LOCATIONS.slice(0, 6).map(loc => (
-                      <Badge 
-                        key={loc} 
-                        variant="secondary" 
-                        className="cursor-pointer hover:bg-primary hover:text-white transition-colors py-0 text-[10px]"
-                        onClick={() => setNewApp({...newApp, location: loc})}
-                      >
-                        {loc}
-                      </Badge>
-                    ))}
-                  </div>
                 </div>
               </div>
               <DialogFooter>
