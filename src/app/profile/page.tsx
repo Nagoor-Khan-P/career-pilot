@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
-import { getCurrentUser, User, logout } from '@/lib/auth-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,21 +12,22 @@ import Link from 'next/link';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
       router.push('/login');
-      return;
     }
-    setUser(currentUser);
-  }, [router]);
+  }, [router, status]);
 
-  if (!user) return null;
+  if (status === 'loading' || !session?.user) return null;
 
-  const handleLogout = () => {
-    logout();
+  const [firstName, ...rest] = (session.user.name ?? '').split(' ');
+  const lastName = rest.join(' ');
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push('/');
   };
 
@@ -53,9 +54,9 @@ export default function ProfilePage() {
               </Avatar>
             </div>
             <CardTitle className="text-3xl font-headline font-bold">
-              {user.firstName} {user.lastName}
+              {firstName} {lastName}
             </CardTitle>
-            <CardDescription className="text-lg">@{user.username}</CardDescription>
+            <CardDescription className="text-lg">@{(session.user as any).username}</CardDescription>
           </CardHeader>
           
           <CardContent className="py-8 space-y-6">
@@ -66,7 +67,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Username</p>
-                  <p className="font-semibold text-lg">{user.username}</p>
+                  <p className="font-semibold text-lg">{(session.user as any).username}</p>
                 </div>
               </div>
 
@@ -76,7 +77,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Account ID</p>
-                  <p className="font-mono text-sm break-all">{user.id}</p>
+                  <p className="font-mono text-sm break-all">{session.user.id}</p>
                 </div>
               </div>
             </div>

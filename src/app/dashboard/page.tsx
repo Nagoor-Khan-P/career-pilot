@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
@@ -23,7 +24,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getCurrentUser } from '@/lib/auth-utils';
 import { useRouter } from 'next/navigation';
 
 const COMMON_COMPANIES = [
@@ -64,6 +64,7 @@ const COMMON_ROLES = [
 
 export default function Dashboard() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,18 +79,25 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-    setApplications(getApplications());
-  }, [router]);
 
-  const handleAddApplication = () => {
+    if (status === 'authenticated') {
+      const loadApplications = async () => {
+        const apps = await getApplications();
+        setApplications(apps);
+      };
+      loadApplications();
+    }
+  }, [router, status]);
+
+  const handleAddApplication = async () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
-    addApplication(newApp);
-    setApplications(getApplications());
+    const createdApp = await addApplication(newApp);
+    setApplications((current) => [createdApp, ...current]);
     setIsAddDialogOpen(false);
     setNewApp({
       companyName: '',
@@ -100,9 +108,9 @@ export default function Dashboard() {
     });
   };
 
-  const handleDelete = (id: string) => {
-    deleteApplication(id);
-    setApplications(getApplications());
+  const handleDelete = async (id: string) => {
+    await deleteApplication(id);
+    setApplications((current) => current.filter((app) => app.id !== id));
   };
 
   const filteredApps = applications.filter(app => {

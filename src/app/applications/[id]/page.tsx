@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, InterviewEvent, EventType, ApplicationStatus } from '@/lib/types';
 import { getApplicationById, updateApplication } from '@/lib/storage-utils';
@@ -32,11 +33,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getInterviewPreparationTips } from '@/ai/flows/interview-preparation-tips';
-import { getCurrentUser } from '@/lib/auth-utils';
 
 export default function ApplicationDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [application, setApplication] = useState<JobApplication | null>(null);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isAIToolOpen, setIsAIToolOpen] = useState(false);
@@ -51,31 +52,38 @@ export default function ApplicationDetail() {
   });
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
 
-    if (id) {
-      const app = getApplicationById(id as string);
+    const loadApplication = async () => {
+      if (!id) return;
+      const app = await getApplicationById(id as string);
       if (app) {
         setApplication(app);
       } else {
         router.push('/dashboard');
       }
+    };
+
+    if (status === 'authenticated') {
+      loadApplication();
     }
-  }, [id, router]);
+  }, [id, router, status]);
 
   if (!application) return null;
 
-  const handleUpdateStatus = (newStatus: ApplicationStatus) => {
+  const handleUpdateStatus = async (newStatus: ApplicationStatus) => {
+    if (!application) return;
     const updated = { ...application, status: newStatus };
-    updateApplication(updated);
-    setApplication(updated);
+    const result = await updateApplication(updated);
+    setApplication(result);
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
+    if (!application) return;
     const event: InterviewEvent = {
       ...newEvent,
       id: crypto.randomUUID(),
@@ -85,19 +93,20 @@ export default function ApplicationDetail() {
       ...application,
       events: [...application.events, event].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     };
-    updateApplication(updated);
-    setApplication(updated);
+    const result = await updateApplication(updated);
+    setApplication(result);
     setIsEventDialogOpen(false);
     setNewEvent({ type: 'Technical Interview', date: new Date().toISOString().split('T')[0], notes: '' });
   };
 
-  const handleDeleteEvent = (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!application) return;
     const updated = {
       ...application,
       events: application.events.filter(e => e.id !== eventId),
     };
-    updateApplication(updated);
-    setApplication(updated);
+    const result = await updateApplication(updated);
+    setApplication(result);
   };
 
   const generateAiTips = async () => {

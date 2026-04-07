@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { signup } from '@/lib/auth-utils';
+import { signIn } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { User as UserIcon, KeyRound, Eye, EyeOff } from 'lucide-react';
@@ -54,18 +54,43 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = (data: SignupFormValues) => {
+  const onSubmit = async (data: SignupFormValues) => {
     try {
-      signup(data.username, data.password, data.firstName, data.lastName);
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body?.error || 'Registration failed');
+      }
+
+      const signInResult = await signIn('credentials', {
+        redirect: false,
+        username: data.username,
+        password: data.password,
+      });
+
+      if (!signInResult || signInResult.error) {
+        throw new Error(signInResult?.error || 'Unable to sign in after registration');
+      }
+
       toast({
-        title: "Account created!",
-        description: "Welcome to CareerPilot. Redirecting to your dashboard...",
+        title: 'Account created!',
+        description: 'Welcome to CareerPilot. Redirecting to your dashboard...',
       });
       router.push('/dashboard');
     } catch (error: any) {
       toast({
-        variant: "destructive",
-        title: "Registration Failed",
+        variant: 'destructive',
+        title: 'Registration Failed',
         description: error.message,
       });
     }

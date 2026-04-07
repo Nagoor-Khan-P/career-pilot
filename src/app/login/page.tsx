@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { login } from '@/lib/auth-utils';
+import { signIn } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { KeyRound, User as UserIcon, Eye, EyeOff } from 'lucide-react';
@@ -21,22 +21,28 @@ export default function LoginPage() {
     password: '',
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      login(formData.username, formData.password);
+    const result = await signIn('credentials', {
+      redirect: false,
+      username: formData.username,
+      password: formData.password,
+    });
+
+    if (!result || result.error) {
       toast({
-        title: "Welcome back!",
-        description: "Redirecting to your dashboard...",
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: result?.error || 'Invalid username or password',
       });
-      router.push('/dashboard');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message,
-      });
+      return;
     }
+
+    toast({
+      title: 'Welcome back!',
+      description: 'Redirecting to your dashboard...',
+    });
+    router.push('/dashboard');
   };
 
   return (

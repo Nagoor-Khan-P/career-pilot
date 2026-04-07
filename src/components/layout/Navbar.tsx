@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Rocket, LogOut, User as UserIcon, UserCircle } from 'lucide-react';
-import { getCurrentUser, logout, User } from '@/lib/auth-utils';
-import { useEffect, useState } from 'react';
+import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
@@ -14,17 +13,21 @@ import {
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
+  const { data: session } = useSession();
 
-  useEffect(() => {
-    setUser(getCurrentUser());
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    setUser(null);
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push('/');
   };
+
+  const user = session?.user
+    ? {
+        id: session.user.id as string,
+        username: (session.user as any).username as string,
+        firstName: session.user.name?.split(' ')[0] ?? '',
+        lastName: session.user.name?.split(' ').slice(1).join(' ') ?? '',
+      }
+    : null;
 
   const isDashboard = pathname === '/dashboard';
 

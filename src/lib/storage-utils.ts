@@ -1,51 +1,65 @@
 import { JobApplication } from './types';
 
-const STORAGE_KEY = 'careerpilot_applications';
+const API_BASE = '/api/applications';
 
-export const getApplications = (): JobApplication[] => {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(STORAGE_KEY);
-  return stored ? JSON.parse(stored) : [];
+const mapApplicationDates = (application: any): JobApplication => ({
+  ...application,
+  submissionDate: String(application.submissionDate),
+  events: application.events?.map((event: any) => ({
+    ...event,
+    date: String(event.date),
+  })) ?? [],
+});
+
+export const getApplications = async (): Promise<JobApplication[]> => {
+  const response = await fetch(API_BASE, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error('Unable to load applications');
+  }
+  const data = await response.json();
+  return data.map(mapApplicationDates);
 };
 
-export const saveApplications = (apps: JobApplication[]) => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+export const getApplicationById = async (id: string): Promise<JobApplication | undefined> => {
+  const response = await fetch(`${API_BASE}/${id}`, { cache: 'no-store' });
+  if (!response.ok) {
+    return undefined;
+  }
+  const data = await response.json();
+  return mapApplicationDates(data);
 };
 
-export const addApplication = (app: Omit<JobApplication, 'id' | 'events'>) => {
-  const apps = getApplications();
-  const newApp: JobApplication = {
-    ...app,
-    id: crypto.randomUUID(),
-    events: [
-      {
-        id: crypto.randomUUID(),
-        applicationId: '', // Filled in below if needed, but logic usually handles it
-        type: 'Application Submitted',
-        date: app.submissionDate,
-        notes: 'Initial application submitted.',
-      }
-    ],
-  };
-  newApp.events[0].applicationId = newApp.id;
-  const updated = [newApp, ...apps];
-  saveApplications(updated);
-  return newApp;
+export const addApplication = async (app: Omit<JobApplication, 'id' | 'events'>) => {
+  const response = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(app),
+  });
+  if (!response.ok) {
+    throw new Error('Unable to add application');
+  }
+  const data = await response.json();
+  return mapApplicationDates(data);
 };
 
-export const updateApplication = (updatedApp: JobApplication) => {
-  const apps = getApplications();
-  const updated = apps.map(app => app.id === updatedApp.id ? updatedApp : app);
-  saveApplications(updated);
+export const updateApplication = async (updatedApp: JobApplication) => {
+  const response = await fetch(`${API_BASE}/${updatedApp.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedApp),
+  });
+  if (!response.ok) {
+    throw new Error('Unable to update application');
+  }
+  const data = await response.json();
+  return mapApplicationDates(data);
 };
 
-export const deleteApplication = (id: string) => {
-  const apps = getApplications();
-  const updated = apps.filter(app => app.id !== id);
-  saveApplications(updated);
-};
-
-export const getApplicationById = (id: string): JobApplication | undefined => {
-  return getApplications().find(app => app.id === id);
+export const deleteApplication = async (id: string) => {
+  const response = await fetch(`${API_BASE}/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Unable to delete application');
+  }
 };
