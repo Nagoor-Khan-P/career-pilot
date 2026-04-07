@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  },
 };
 
 export default nextConfig;
