@@ -47,16 +47,23 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    session: async (session: any, user: any) => {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.name = user.name ?? session.user.name;
-        session.user.email = user.email ?? session.user.email;
-        session.user.username = user.username ?? (session.user as any).username;
+        session.user.id = token.sub;
+        session.user.username = (token as any).username;
       }
       return session;
     },
-  } as any,
+    async jwt({ token, user }) {
+      if (user) {
+        token.username = (user as any).username;
+      }
+      return token;
+    },
+  },
+  session: {
+    strategy: 'jwt',
+  },
   pages: {
     signIn: '/login',
   },
