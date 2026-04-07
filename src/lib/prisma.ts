@@ -5,10 +5,26 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-export const prisma =
-  global.prisma ??
-  new PrismaClient({
+export const getPrismaClient = (): PrismaClient => {
+  if (globalThis.prisma) {
+    return globalThis.prisma;
+  }
+
+  const newPrismaClient = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['warn', 'error'],
   });
 
-if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.prisma = newPrismaClient;
+  }
+
+  return newPrismaClient;
+};
+
+// Lazy-loaded singleton using getter
+export const prisma = new Proxy<PrismaClient>({} as PrismaClient, {
+  get: (target, prop) => {
+    const client = getPrismaClient();
+    return (client as any)[prop];
+  },
+});
