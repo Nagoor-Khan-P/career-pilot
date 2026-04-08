@@ -21,8 +21,8 @@ export const getApplications = async (): Promise<JobApplication[]> => {
   }
   
   const response = await fetch(API_BASE, { 
-    cache: 'force-cache',
-    next: { revalidate: 30 }
+    method: 'GET',
+    headers: { 'Cache-Control': 'no-store' }
   });
   if (!response.ok) {
     throw new Error('Unable to load applications');
@@ -82,6 +82,12 @@ export const deleteApplication = async (id: string) => {
   if (!response.ok) {
     throw new Error('Unable to delete application');
   }
-  applicationsCache = null; // Invalidate cache
+  // Force immediate cache invalidation
+  applicationsCache = null;
+  cacheTimestamp = 0;
+};
+
+export const invalidateApplicationsCache = () => {
+  applicationsCache = null;
   cacheTimestamp = 0;
 };

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, InterviewEvent, EventType, ApplicationStatus, ApplicationSource } from '@/lib/types';
-import { getApplicationById, updateApplication } from '@/lib/storage-utils';
+import { getApplicationById, updateApplication, invalidateApplicationsCache, getApplications } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,8 +85,13 @@ export default function ApplicationDetail() {
     setIsStatusUpdating(true);
     try {
       const updated = { ...application, status: newStatus };
-      const result = await updateApplication(updated);
-      setApplication(result);
+      await updateApplication(updated);
+      // Refetch fresh data from server
+      invalidateApplicationsCache();
+      const freshApp = await getApplicationById(application.id);
+      if (freshApp) {
+        setApplication(freshApp);
+      }
       toast({
         title: 'Success',
         description: 'Application status updated successfully.',
@@ -109,8 +114,13 @@ export default function ApplicationDetail() {
     setIsStatusUpdating(true);
     try {
       const updated = { ...application, applicationSource: newSource };
-      const result = await updateApplication(updated);
-      setApplication(result);
+      await updateApplication(updated);
+      // Refetch fresh data from server
+      invalidateApplicationsCache();
+      const freshApp = await getApplicationById(application.id);
+      if (freshApp) {
+        setApplication(freshApp);
+      }
       toast({
         title: 'Success',
         description: 'Application source updated successfully.',
@@ -141,8 +151,13 @@ export default function ApplicationDetail() {
         ...application,
         events: [...application.events, event].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
       };
-      const result = await updateApplication(updated);
-      setApplication(result);
+      await updateApplication(updated);
+      // Refetch fresh data from server
+      invalidateApplicationsCache();
+      const freshApp = await getApplicationById(application.id);
+      if (freshApp) {
+        setApplication(freshApp);
+      }
       setIsEventDialogOpen(false);
       toast({
         title: 'Success',
@@ -170,8 +185,13 @@ export default function ApplicationDetail() {
         ...application,
         events: application.events.filter(e => e.id !== eventId),
       };
-      const result = await updateApplication(updated);
-      setApplication(result);
+      await updateApplication(updated);
+      // Refetch fresh data from server
+      invalidateApplicationsCache();
+      const freshApp = await getApplicationById(application.id);
+      if (freshApp) {
+        setApplication(freshApp);
+      }
       toast({
         title: 'Success',
         description: 'Event removed from timeline.',

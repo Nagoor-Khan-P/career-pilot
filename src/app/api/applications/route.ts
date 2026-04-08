@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 60; // Revalidate every 60 seconds for better caching
 
 export async function GET() {
   try {
@@ -21,7 +20,6 @@ export async function GET() {
             id: true,
             type: true,
             date: true,
-            notes: true,
             applicationId: true,
           }
         }
@@ -37,7 +35,12 @@ export async function GET() {
           ...event,
           date: event.date.toISOString(),
         })),
-      }))
+      })),
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+        },
+      }
     );
   } catch (error) {
     console.error('API Error:', error);

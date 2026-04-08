@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, ApplicationStatus, ApplicationSource } from '@/lib/types';
-import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
+import { getApplications, addApplication, deleteApplication, invalidateApplicationsCache } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search, Loader2 } from 'lucide-react';
@@ -74,6 +74,7 @@ export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddingApplication, setIsAddingApplication] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
   
   const [newApp, setNewApp] = useState({
     companyName: '',
@@ -91,14 +92,15 @@ export default function Dashboard() {
       return;
     }
 
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && !hasLoaded) {
       const loadApplications = async () => {
         const apps = await getApplications();
         setApplications(apps);
+        setHasLoaded(true);
       };
       loadApplications();
     }
-  }, [router, status]);
+  }, [router, status, hasLoaded]);
 
   // Debounce search input to avoid excessive re-renders
   useEffect(() => {
@@ -113,8 +115,11 @@ export default function Dashboard() {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
     setIsAddingApplication(true);
     try {
-      const createdApp = await addApplication(newApp);
-      setApplications((current) => [createdApp, ...current]);
+      await addApplication(newApp);
+      // Refetch fresh data from server
+      invalidateApplicationsCache();
+      const freshApps = await getApplications();
+      setApplications(freshApps);
       setIsAddDialogOpen(false);
       toast({
         title: 'Success',
@@ -145,7 +150,10 @@ export default function Dashboard() {
     setDeletingId(id);
     try {
       await deleteApplication(id);
-      setApplications((current) => current.filter((app) => app.id !== id));
+      // Refetch fresh data from server to ensure consistency
+      invalidateApplicationsCache();
+      const freshApps = await getApplications();
+      setApplications(freshApps);
       toast({
         title: 'Success',
         description: 'Application deleted successfully.',
