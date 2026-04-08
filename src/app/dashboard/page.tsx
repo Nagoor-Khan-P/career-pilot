@@ -24,6 +24,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 const COMMON_COMPANIES = [
@@ -64,6 +65,7 @@ const COMMON_ROLES = [
 
 export default function Dashboard() {
   const router = useRouter();
+  const { toast } = useToast();
   const { data: session, status } = useSession();
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -96,21 +98,45 @@ export default function Dashboard() {
 
   const handleAddApplication = async () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
-    const createdApp = await addApplication(newApp);
-    setApplications((current) => [createdApp, ...current]);
-    setIsAddDialogOpen(false);
-    setNewApp({
-      companyName: '',
-      role: '',
-      submissionDate: new Date().toISOString().split('T')[0],
-      status: 'Applied',
-      location: '',
-    });
+    try {
+      const createdApp = await addApplication(newApp);
+      setApplications((current) => [createdApp, ...current]);
+      setIsAddDialogOpen(false);
+      toast({
+        title: 'Success',
+        description: `Application for ${newApp.companyName} added successfully.`,
+      });
+      setNewApp({
+        companyName: '',
+        role: '',
+        submissionDate: new Date().toISOString().split('T')[0],
+        status: 'Applied',
+        location: '',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add application. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await deleteApplication(id);
-    setApplications((current) => current.filter((app) => app.id !== id));
+    try {
+      await deleteApplication(id);
+      setApplications((current) => current.filter((app) => app.id !== id));
+      toast({
+        title: 'Success',
+        description: 'Application deleted successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete application. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const filteredApps = applications.filter(app => {
