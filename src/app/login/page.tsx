@@ -34,6 +34,7 @@ export default function LoginPage() {
         variant: 'destructive',
         title: 'Login Failed',
         description: result?.error || 'Invalid username or password',
+        duration: 3000,
       });
       return;
     }
@@ -41,6 +42,7 @@ export default function LoginPage() {
     toast({
       title: 'Welcome back!',
       description: 'Redirecting to your dashboard...',
+      duration: 3000,
     });
     router.push('/dashboard');
   };

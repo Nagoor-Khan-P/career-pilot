@@ -33,10 +33,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getInterviewPreparationTips } from '@/ai/flows/interview-preparation-tips';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ApplicationDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const { data: session, status } = useSession();
   const [application, setApplication] = useState<JobApplication | null>(null);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
@@ -77,36 +79,78 @@ export default function ApplicationDetail() {
 
   const handleUpdateStatus = async (newStatus: ApplicationStatus) => {
     if (!application) return;
-    const updated = { ...application, status: newStatus };
-    const result = await updateApplication(updated);
-    setApplication(result);
+    try {
+      const updated = { ...application, status: newStatus };
+      const result = await updateApplication(updated);
+      setApplication(result);
+      toast({
+        title: 'Success',
+        description: 'Application status updated successfully.',
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update status. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+    }
   };
 
   const handleAddEvent = async () => {
     if (!application) return;
-    const event: InterviewEvent = {
-      ...newEvent,
-      id: crypto.randomUUID(),
-      applicationId: application.id,
-    };
-    const updated = {
-      ...application,
-      events: [...application.events, event].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    };
-    const result = await updateApplication(updated);
-    setApplication(result);
-    setIsEventDialogOpen(false);
-    setNewEvent({ type: 'Technical Interview', date: new Date().toISOString().split('T')[0], notes: '' });
+    try {
+      const event: InterviewEvent = {
+        ...newEvent,
+        id: crypto.randomUUID(),
+        applicationId: application.id,
+      };
+      const updated = {
+        ...application,
+        events: [...application.events, event].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      };
+      const result = await updateApplication(updated);
+      setApplication(result);
+      setIsEventDialogOpen(false);
+      toast({
+        title: 'Success',
+        description: 'Event added to timeline successfully.',
+        duration: 3000,
+      });
+      setNewEvent({ type: 'Technical Interview', date: new Date().toISOString().split('T')[0], notes: '' });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add event. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+    }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!application) return;
-    const updated = {
-      ...application,
-      events: application.events.filter(e => e.id !== eventId),
-    };
-    const result = await updateApplication(updated);
-    setApplication(result);
+    try {
+      const updated = {
+        ...application,
+        events: application.events.filter(e => e.id !== eventId),
+      };
+      const result = await updateApplication(updated);
+      setApplication(result);
+      toast({
+        title: 'Success',
+        description: 'Event removed from timeline.',
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete event. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+    }
   };
 
   const generateAiTips = async () => {
@@ -119,8 +163,19 @@ export default function ApplicationDetail() {
         interviewStage: application.status,
       });
       setAiTips(result.tips);
+      toast({
+        title: 'Success',
+        description: 'Interview preparation tips generated successfully.',
+        duration: 3000,
+      });
     } catch (error) {
       setAiTips("Failed to generate tips. Please try again.");
+      toast({
+        title: 'Error',
+        description: 'Failed to generate AI tips. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
     } finally {
       setIsAiLoading(false);
     }

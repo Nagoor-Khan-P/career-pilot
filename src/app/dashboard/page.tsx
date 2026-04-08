@@ -105,6 +105,7 @@ export default function Dashboard() {
       toast({
         title: 'Success',
         description: `Application for ${newApp.companyName} added successfully.`,
+        duration: 3000,
       });
       setNewApp({
         companyName: '',
@@ -118,6 +119,7 @@ export default function Dashboard() {
         title: 'Error',
         description: 'Failed to add application. Please try again.',
         variant: 'destructive',
+        duration: 3000,
       });
     }
   };
@@ -129,12 +131,14 @@ export default function Dashboard() {
       toast({
         title: 'Success',
         description: 'Application deleted successfully.',
+        duration: 3000,
       });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to delete application. Please try again.',
         variant: 'destructive',
+        duration: 3000,
       });
     }
   };

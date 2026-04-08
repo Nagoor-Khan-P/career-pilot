@@ -85,6 +85,7 @@ export default function SignupPage() {
       toast({
         title: 'Account created!',
         description: 'Welcome to CareerPilot. Redirecting to your dashboard...',
+        duration: 3000,
       });
       router.push('/dashboard');
     } catch (error: any) {
@@ -92,6 +93,7 @@ export default function SignupPage() {
         variant: 'destructive',
         title: 'Registration Failed',
         description: error.message,
+        duration: 3000,
       });
     }
   };
