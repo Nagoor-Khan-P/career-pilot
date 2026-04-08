@@ -7,7 +7,7 @@ import { JobApplication, ApplicationStatus } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search } from 'lucide-react';
+import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { 
@@ -71,6 +71,8 @@ export default function Dashboard() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [isAddingApplication, setIsAddingApplication] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const [newApp, setNewApp] = useState({
     companyName: '',
@@ -98,6 +100,7 @@ export default function Dashboard() {
 
   const handleAddApplication = async () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
+    setIsAddingApplication(true);
     try {
       const createdApp = await addApplication(newApp);
       setApplications((current) => [createdApp, ...current]);
@@ -121,10 +124,13 @@ export default function Dashboard() {
         variant: 'destructive',
         duration: 3000,
       });
+    } finally {
+      setIsAddingApplication(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    setDeletingId(id);
     try {
       await deleteApplication(id);
       setApplications((current) => current.filter((app) => app.id !== id));
@@ -140,6 +146,8 @@ export default function Dashboard() {
         variant: 'destructive',
         duration: 3000,
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -318,13 +326,20 @@ export default function Dashboard() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="cursor-pointer">Cancel</Button>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="cursor-pointer" disabled={isAddingApplication}>Cancel</Button>
                 <Button 
                   onClick={handleAddApplication} 
                   className="cursor-pointer"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isAddingApplication}
                 >
-                  Save Application
+                  {isAddingApplication ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Application'
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -392,8 +407,13 @@ export default function Dashboard() {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-transparent opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              disabled={deletingId === app.id}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              {deletingId === app.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -404,12 +424,20 @@ export default function Dashboard() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                              <AlertDialogCancel className="cursor-pointer" disabled={deletingId === app.id}>Cancel</AlertDialogCancel>
                               <AlertDialogAction 
                                 onClick={() => handleDelete(app.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                                disabled={deletingId === app.id}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer disabled:opacity-50"
                               >
-                                Delete
+                                {deletingId === app.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  'Delete'
+                                )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

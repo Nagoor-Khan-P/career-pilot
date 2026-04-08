@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { signIn } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { User as UserIcon, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { User as UserIcon, KeyRound, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,6 +42,7 @@ export default function SignupPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -55,6 +56,7 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (data: SignupFormValues) => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -95,6 +97,7 @@ export default function SignupPage() {
         description: error.message,
         duration: 3000,
       });
+      setIsLoading(false);
     }
   };
 
@@ -118,7 +121,7 @@ export default function SignupPage() {
                       <FormItem>
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jane" {...field} />
+                          <Input placeholder="Jane" disabled={isLoading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -131,7 +134,7 @@ export default function SignupPage() {
                       <FormItem>
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Smith" {...field} />
+                          <Input placeholder="Smith" disabled={isLoading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -148,7 +151,7 @@ export default function SignupPage() {
                       <FormControl>
                         <div className="relative">
                           <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="janesmith" className="pl-10" {...field} />
+                          <Input placeholder="janesmith" disabled={isLoading} className="pl-10" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -168,13 +171,15 @@ export default function SignupPage() {
                           <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="••••••••" 
+                            disabled={isLoading}
                             className="pl-10 pr-10" 
                             {...field} 
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            disabled={isLoading}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
@@ -197,13 +202,15 @@ export default function SignupPage() {
                           <Input 
                             type={showConfirmPassword ? "text" : "password"} 
                             placeholder="••••••••" 
+                            disabled={isLoading}
                             className="pl-10 pr-10" 
                             {...field} 
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            disabled={isLoading}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
                           >
                             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
@@ -214,8 +221,15 @@ export default function SignupPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full py-6 text-lg font-bold">
-                  Create Account
+                <Button type="submit" disabled={isLoading} className="w-full py-6 text-lg font-bold">
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               </form>
             </Form>

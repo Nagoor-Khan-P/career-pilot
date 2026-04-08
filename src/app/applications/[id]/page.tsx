@@ -45,6 +45,9 @@ export default function ApplicationDetail() {
   const [isAIToolOpen, setIsAIToolOpen] = useState(false);
   const [aiTips, setAiTips] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
   // New Event Form State
   const [newEvent, setNewEvent] = useState<Omit<InterviewEvent, 'id' | 'applicationId'>>({
@@ -79,6 +82,7 @@ export default function ApplicationDetail() {
 
   const handleUpdateStatus = async (newStatus: ApplicationStatus) => {
     if (!application) return;
+    setIsStatusUpdating(true);
     try {
       const updated = { ...application, status: newStatus };
       const result = await updateApplication(updated);
@@ -95,11 +99,14 @@ export default function ApplicationDetail() {
         variant: 'destructive',
         duration: 3000,
       });
+    } finally {
+      setIsStatusUpdating(false);
     }
   };
 
   const handleAddEvent = async () => {
     if (!application) return;
+    setIsAddingEvent(true);
     try {
       const event: InterviewEvent = {
         ...newEvent,
@@ -126,11 +133,14 @@ export default function ApplicationDetail() {
         variant: 'destructive',
         duration: 3000,
       });
+    } finally {
+      setIsAddingEvent(false);
     }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!application) return;
+    setDeletingEventId(eventId);
     try {
       const updated = {
         ...application,
@@ -150,6 +160,8 @@ export default function ApplicationDetail() {
         variant: 'destructive',
         duration: 3000,
       });
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
@@ -221,8 +233,8 @@ export default function ApplicationDetail() {
             </div>
           </div>
           <div className="flex flex-col gap-3 w-full md:w-auto">
-            <Select value={application.status} onValueChange={(val) => handleUpdateStatus(val as ApplicationStatus)}>
-              <SelectTrigger className="w-full md:w-48 bg-background">
+            <Select value={application.status} onValueChange={(val) => handleUpdateStatus(val as ApplicationStatus)} disabled={isStatusUpdating}>
+              <SelectTrigger className="w-full md:w-48 bg-background disabled:opacity-50">
                 <SelectValue placeholder="Update Status" />
               </SelectTrigger>
               <SelectContent>
@@ -236,9 +248,18 @@ export default function ApplicationDetail() {
             </Select>
             <Dialog open={isAIToolOpen} onOpenChange={setIsAIToolOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary" className="w-full flex items-center gap-2 bg-accent/10 text-accent hover:bg-accent/20 border-accent/20">
-                  <Sparkles className="h-4 w-4" />
-                  Interview Prep Tips
+                <Button variant="secondary" onClick={generateAiTips} disabled={isAiLoading} className="w-full flex items-center gap-2 bg-accent/10 text-accent hover:bg-accent/20 border-accent/20 disabled:opacity-50">
+                  {isAiLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Interview Prep Tips
+                    </>
+                  )}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -255,7 +276,16 @@ export default function ApplicationDetail() {
                   {!aiTips && !isAiLoading && (
                     <div className="text-center py-8">
                       <p className="mb-4 text-muted-foreground">Get specialized tips based on your current application status.</p>
-                      <Button onClick={generateAiTips}>Generate Preparation Tips</Button>
+                      <Button onClick={generateAiTips} disabled={isAiLoading}>
+                        {isAiLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          'Generate Preparation Tips'
+                        )}
+                      </Button>
                     </div>
                   )}
                   {isAiLoading && (
@@ -342,8 +372,17 @@ export default function ApplicationDetail() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEventDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddEvent}>Add to Timeline</Button>
+                  <Button variant="outline" onClick={() => setIsEventDialogOpen(false)} disabled={isAddingEvent}>Cancel</Button>
+                  <Button onClick={handleAddEvent} disabled={isAddingEvent}>
+                    {isAddingEvent ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      'Add to Timeline'
+                    )}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -361,9 +400,14 @@ export default function ApplicationDetail() {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <button 
-                          className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                          disabled={deletingEventId === event.id}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {deletingEventId === event.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -374,12 +418,20 @@ export default function ApplicationDetail() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel disabled={deletingEventId === event.id}>Cancel</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={() => handleDeleteEvent(event.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deletingEventId === event.id}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
                           >
-                            Delete
+                            {deletingEventId === event.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Deleting...
+                              </>
+                            ) : (
+                              'Delete'
+                            )}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

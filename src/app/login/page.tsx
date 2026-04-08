@@ -10,12 +10,13 @@ import { Label } from '@/components/ui/label';
 import { signIn } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { KeyRound, User as UserIcon, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, User as UserIcon, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -23,28 +24,34 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await signIn('credentials', {
-      redirect: false,
-      username: formData.username,
-      password: formData.password,
-    });
+    setIsLoading(true);
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        username: formData.username,
+        password: formData.password,
+      });
 
-    if (!result || result.error) {
+      if (!result || result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: result?.error || 'Invalid username or password',
+          duration: 3000,
+        });
+        setIsLoading(false);
+        return;
+      }
+
       toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: result?.error || 'Invalid username or password',
+        title: 'Welcome back!',
+        description: 'Redirecting to your dashboard...',
         duration: 3000,
       });
-      return;
+      router.push('/dashboard');
+    } finally {
+      setIsLoading(false);
     }
-
-    toast({
-      title: 'Welcome back!',
-      description: 'Redirecting to your dashboard...',
-      duration: 3000,
-    });
-    router.push('/dashboard');
   };
 
   return (
@@ -67,6 +74,7 @@ export default function LoginPage() {
                     placeholder="janesmith" 
                     required 
                     className="pl-10"
+                    disabled={isLoading}
                     value={formData.username}
                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                   />
@@ -82,19 +90,30 @@ export default function LoginPage() {
                     placeholder="••••••••" 
                     required 
                     className="pl-10 pr-10"
+                    disabled={isLoading}
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                    disabled={isLoading}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full py-6 text-lg">Sign In</Button>
+              <Button type="submit" disabled={isLoading} className="w-full py-6 text-lg">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
