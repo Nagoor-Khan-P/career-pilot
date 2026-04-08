@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Revalidate every 60 seconds for better caching
 
 export async function GET() {
   try {
@@ -14,7 +15,17 @@ export async function GET() {
 
     const applications = await prisma.jobApplication.findMany({
       where: { userId: session.user.id },
-      include: { events: true },
+      include: { 
+        events: {
+          select: {
+            id: true,
+            type: true,
+            date: true,
+            notes: true,
+            applicationId: true,
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' },
     });
 

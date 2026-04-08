@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
@@ -70,6 +70,7 @@ export default function Dashboard() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddingApplication, setIsAddingApplication] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -97,6 +98,15 @@ export default function Dashboard() {
       loadApplications();
     }
   }, [router, status]);
+
+  // Debounce search input to avoid excessive re-renders
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
 
   const handleAddApplication = async () => {
     if (!newApp.companyName || !newApp.role || !newApp.submissionDate || !newApp.status) return;
@@ -151,12 +161,14 @@ export default function Dashboard() {
     }
   };
 
-  const filteredApps = applications.filter(app => {
-    const matchesSearch = app.companyName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          app.role.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || app.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredApps = useMemo(() => {
+    return applications.filter(app => {
+      const matchesSearch = app.companyName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+                            app.role.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      const matchesFilter = filterStatus === 'all' || app.status === filterStatus;
+      return matchesSearch && matchesFilter;
+    });
+  }, [applications, debouncedSearchTerm, filterStatus]);
 
   const getStatusColor = (status: ApplicationStatus) => {
     switch (status) {
@@ -196,8 +208,7 @@ export default function Dashboard() {
 
   const isFormValid = newApp.companyName.trim() !== '' && 
                       newApp.role.trim() !== '' && 
-                      newApp.submissionDate !== '' && 
-                      newApp.status !== '';
+                      newApp.submissionDate !== '';
 
   return (
     <div className="min-h-screen bg-background">
