@@ -75,7 +75,7 @@ model JobApplication {
 model InterviewEvent {
   id            String         @id @default(cuid())
   applicationId String
-  application   JobApplication @relation(fields: [applicationId], references: [id])
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   type          String
   date          DateTime
   notes         String
