@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     const payload = await req.json();
-    const { companyName, role, submissionDate, status, location, salary, jobDescriptionUrl } = payload;
+    const { companyName, role, submissionDate, status, applicationSource, location, salary, jobDescriptionUrl } = payload;
 
     if (!companyName || !role || !submissionDate || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
         role,
         submissionDate: new Date(submissionDate),
         status,
+        ...(applicationSource && { applicationSource }),
         location,
         salary,
         jobDescriptionUrl,
@@ -84,10 +85,10 @@ export async function POST(req: Request) {
       {
         ...application,
         submissionDate: application.submissionDate.toISOString(),
-        events: application.events.map((event: any) => ({
+        events: (application as any).events?.map((event: any) => ({
           ...event,
           date: event.date.toISOString(),
-        })),
+        })) || [],
       },
       { status: 201 }
     );

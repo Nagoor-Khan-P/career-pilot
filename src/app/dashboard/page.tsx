@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
-import { JobApplication, ApplicationStatus } from '@/lib/types';
+import { JobApplication, ApplicationStatus, ApplicationSource } from '@/lib/types';
 import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -80,6 +80,7 @@ export default function Dashboard() {
     role: '',
     submissionDate: new Date().toISOString().split('T')[0],
     status: 'Applied' as ApplicationStatus,
+    applicationSource: 'Applied Online' as ApplicationSource,
     location: '',
   });
 
@@ -125,6 +126,7 @@ export default function Dashboard() {
         role: '',
         submissionDate: new Date().toISOString().split('T')[0],
         status: 'Applied',
+        applicationSource: 'Applied Online',
         location: '',
       });
     } catch (error) {
@@ -311,6 +313,22 @@ export default function Dashboard() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="source">Application Source *</Label>
+                  <Select 
+                    value={newApp.applicationSource} 
+                    onValueChange={(val) => setNewApp({...newApp, applicationSource: val as ApplicationSource})}
+                  >
+                    <SelectTrigger id="source" className="cursor-pointer">
+                      <SelectValue placeholder="Select source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Applied Online" className="cursor-pointer">Applied Online</SelectItem>
+                      <SelectItem value="Recruiter Reached Out" className="cursor-pointer">Recruiter Reached Out</SelectItem>
+                      <SelectItem value="Referral" className="cursor-pointer">Referral</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid gap-2 relative">
                   <Label htmlFor="location">Location (Optional)</Label>

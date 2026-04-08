@@ -1,5 +1,7 @@
 export type ApplicationStatus = 'Applied' | 'OA' | 'Interviewing' | 'Offer' | 'Rejected' | 'Ghosted';
 
+export type ApplicationSource = 'Applied Online' | 'Recruiter Reached Out' | 'Referral';
+
 export type EventType = 'Application Submitted' | 'Online Assessment' | 'Phone Screen' | 'Technical Interview' | 'Behavioral Interview' | 'Final Interview' | 'Offer Received' | 'Rejected' | 'Notes';
 
 export interface InterviewEvent {
@@ -16,6 +18,7 @@ export interface JobApplication {
   role: string;
   submissionDate: string;
   status: ApplicationStatus;
+  applicationSource: ApplicationSource;
   salary?: string;
   location?: string;
   jobDescriptionUrl?: string;

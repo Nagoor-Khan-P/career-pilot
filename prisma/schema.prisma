@@ -62,6 +62,7 @@ model JobApplication {
   role            String
   submissionDate  DateTime
   status          String
+  applicationSource String           @default("Applied Online")
   location        String?
   salary          String?
   jobDescriptionUrl String?

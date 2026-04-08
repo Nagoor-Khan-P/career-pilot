@@ -43,7 +43,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const payload = await req.json();
-    const { status, location, salary, jobDescriptionUrl, submissionDate, events } = payload;
+    const { status, applicationSource, location, salary, jobDescriptionUrl, submissionDate, events } = payload;
 
     const existing = await prisma.jobApplication.findUnique({
       where: { id: params.id },
@@ -56,6 +56,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     const updateData: any = {
       status,
+      applicationSource,
       location,
       salary,
       jobDescriptionUrl,

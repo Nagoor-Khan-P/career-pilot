@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
-import { JobApplication, InterviewEvent, EventType, ApplicationStatus } from '@/lib/types';
+import { JobApplication, InterviewEvent, EventType, ApplicationStatus, ApplicationSource } from '@/lib/types';
 import { getApplicationById, updateApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,6 +96,30 @@ export default function ApplicationDetail() {
       toast({
         title: 'Error',
         description: 'Failed to update status. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+    } finally {
+      setIsStatusUpdating(false);
+    }
+  };
+
+  const handleUpdateSource = async (newSource: ApplicationSource) => {
+    if (!application) return;
+    setIsStatusUpdating(true);
+    try {
+      const updated = { ...application, applicationSource: newSource };
+      const result = await updateApplication(updated);
+      setApplication(result);
+      toast({
+        title: 'Success',
+        description: 'Application source updated successfully.',
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update source. Please try again.',
         variant: 'destructive',
         duration: 3000,
       });
@@ -230,6 +254,7 @@ export default function ApplicationDetail() {
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Submitted: {new Date(application.submissionDate).toLocaleDateString()}</span>
               {application.location && <span className="flex items-center gap-1">📍 {application.location}</span>}
+              <Badge variant="outline" className="w-fit">{application.applicationSource}</Badge>
             </div>
           </div>
           <div className="flex flex-col gap-3 w-full md:w-auto">
@@ -244,6 +269,16 @@ export default function ApplicationDetail() {
                 <SelectItem value="Offer">Offer</SelectItem>
                 <SelectItem value="Rejected">Rejected</SelectItem>
                 <SelectItem value="Ghosted">Ghosted</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={application.applicationSource} onValueChange={(val) => handleUpdateSource(val as ApplicationSource)} disabled={isStatusUpdating}>
+              <SelectTrigger className="w-full md:w-48 bg-background disabled:opacity-50">
+                <SelectValue placeholder="Update Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Applied Online">Applied Online</SelectItem>
+                <SelectItem value="Recruiter Reached Out">Recruiter Reached Out</SelectItem>
+                <SelectItem value="Referral">Referral</SelectItem>
               </SelectContent>
             </Select>
             <Dialog open={isAIToolOpen} onOpenChange={setIsAIToolOpen}>
