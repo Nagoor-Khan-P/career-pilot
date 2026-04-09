@@ -49,7 +49,7 @@ export default function ProfilePage() {
             <div className="flex justify-center mb-4">
               <Avatar className="h-24 w-24 border-4 border-primary/10">
                 <AvatarFallback className="text-3xl bg-primary/5 text-primary">
-                  {user.firstName[0]}{user.lastName[0]}
+                  {firstName[0]}{lastName[0]}
                 </AvatarFallback>
               </Avatar>
             </div>
