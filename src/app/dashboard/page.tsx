@@ -479,32 +479,38 @@ export default function Dashboard() {
                         </AlertDialog>
                       </div>
                     </div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-accent flex-shrink-0" />
-                      <span className="truncate">{app.companyName}</span>
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-2 font-medium text-foreground/80 mt-2">
-                      <Briefcase className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{app.role}</span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-sm space-y-2.5 pt-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4 flex-shrink-0" />
-                      <span>Applied: {new Date(app.submissionDate).toLocaleDateString()}</span>
+                    <div className="flex justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-accent flex-shrink-0" />
+                          <span className="truncate">{app.companyName}</span>
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-2 font-medium text-foreground/80 mt-2">
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{app.role}</span>
+                        </CardDescription>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span>Applied: {new Date(app.submissionDate).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm space-y-2 text-right">
+                        {app.applicationSource && (
+                          <div className="flex items-center justify-end gap-2 text-muted-foreground">
+                            <span className="truncate">{app.applicationSource}</span>
+                            <span className="inline-flex h-4 w-4 items-center justify-center flex-shrink-0">📤</span>
+                          </div>
+                        )}
+                        {app.location && (
+                          <div className="flex items-center justify-end gap-2 text-muted-foreground">
+                            <span className="truncate">{app.location}</span>
+                            <span className="inline-block w-4 h-4 flex-shrink-0 text-center">📍</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {app.applicationSource && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <span className="inline-flex h-4 w-4 items-center justify-center flex-shrink-0">📤</span>
-                        <span className="truncate">{app.applicationSource}</span>
-                      </div>
-                    )}
-                    {app.location && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <span className="inline-block w-4 h-4 flex-shrink-0 text-center">📍</span>
-                        <span className="truncate">{app.location}</span>
-                      </div>
-                    )}
+                  </CardHeader>
+                  <CardContent className="flex-1 pt-2">
                   </CardContent>
                   <CardFooter className="pt-3 pb-4">
                     <div className="w-full flex justify-between items-center text-xs font-semibold text-primary/80">
