@@ -429,8 +429,8 @@ export default function Dashboard() {
                   className="hover:shadow-md transition-all duration-200 h-full flex flex-col cursor-pointer border-transparent hover:border-primary/20"
                   onClick={() => router.push(`/applications/${app.id}`)}
                 >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start mb-2">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start mb-3">
                       <Badge className={getStatusColor(app.status)} variant="outline">
                         {app.status}
                       </Badge>
@@ -479,31 +479,37 @@ export default function Dashboard() {
                         </AlertDialog>
                       </div>
                     </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-accent" />
-                      {app.companyName}
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-accent flex-shrink-0" />
+                      <span className="truncate">{app.companyName}</span>
                     </CardTitle>
-                    <CardDescription className="flex items-center gap-1 font-medium text-foreground/80">
-                      <Briefcase className="h-4 w-4" />
-                      {app.role}
+                    <CardDescription className="flex items-center gap-2 font-medium text-foreground/80 mt-2">
+                      <Briefcase className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{app.role}</span>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex-1 text-sm text-muted-foreground pt-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="h-4 w-4" />
+                  <CardContent className="flex-1 text-sm space-y-2.5 pt-1">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4 flex-shrink-0" />
                       <span>Applied: {new Date(app.submissionDate).toLocaleDateString()}</span>
                     </div>
+                    {app.applicationSource && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="inline-flex h-4 w-4 items-center justify-center flex-shrink-0">📤</span>
+                        <span className="truncate">{app.applicationSource}</span>
+                      </div>
+                    )}
                     {app.location && (
-                      <div className="flex items-center gap-2">
-                        <span className="inline-block w-4 text-center">📍</span>
-                        <span>{app.location}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="inline-block w-4 h-4 flex-shrink-0 text-center">📍</span>
+                        <span className="truncate">{app.location}</span>
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="pt-0 pb-4">
+                  <CardFooter className="pt-3 pb-4">
                     <div className="w-full flex justify-between items-center text-xs font-semibold text-primary/80">
                       <span>{app.events.length} Events Logged</span>
-                      <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                     </div>
                   </CardFooter>
                 </Card>
