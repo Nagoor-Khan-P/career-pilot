@@ -28,10 +28,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         ...event,
         date: event.date.toISOString(),
       })),
-    }, {
-      headers: {
-        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
-      },
     });
   } catch (error) {
     console.error('API Error:', error);

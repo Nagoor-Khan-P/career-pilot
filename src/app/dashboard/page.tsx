@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, ApplicationStatus, ApplicationSource } from '@/lib/types';
-import { getApplications, addApplication, deleteApplication, invalidateApplicationsCache } from '@/lib/storage-utils';
+import { getApplications, addApplication, deleteApplication } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Briefcase, Calendar, ChevronRight, Trash2, Filter, Search, Loader2 } from 'lucide-react';
@@ -116,8 +116,7 @@ export default function Dashboard() {
     setIsAddingApplication(true);
     try {
       await addApplication(newApp);
-      // Refetch fresh data from server
-      invalidateApplicationsCache();
+      // Fetch fresh data from server
       const freshApps = await getApplications();
       setApplications(freshApps);
       setIsAddDialogOpen(false);
@@ -150,8 +149,7 @@ export default function Dashboard() {
     setDeletingId(id);
     try {
       await deleteApplication(id);
-      // Refetch fresh data from server to ensure consistency
-      invalidateApplicationsCache();
+      // Fetch fresh data from server to ensure consistency
       const freshApps = await getApplications();
       setApplications(freshApps);
       toast({

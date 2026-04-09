@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobApplication, InterviewEvent, EventType, ApplicationStatus, ApplicationSource } from '@/lib/types';
-import { getApplicationById, updateApplication, invalidateApplicationsCache, getApplications } from '@/lib/storage-utils';
+import { getApplicationById, updateApplication, getApplications } from '@/lib/storage-utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -86,8 +86,7 @@ export default function ApplicationDetail() {
     try {
       const updated = { ...application, status: newStatus };
       await updateApplication(updated);
-      // Refetch fresh data from server
-      invalidateApplicationsCache();
+      // Fetch fresh data from server
       const freshApp = await getApplicationById(application.id);
       if (freshApp) {
         setApplication(freshApp);
@@ -115,8 +114,7 @@ export default function ApplicationDetail() {
     try {
       const updated = { ...application, applicationSource: newSource };
       await updateApplication(updated);
-      // Refetch fresh data from server
-      invalidateApplicationsCache();
+      // Fetch fresh data from server
       const freshApp = await getApplicationById(application.id);
       if (freshApp) {
         setApplication(freshApp);
@@ -152,8 +150,7 @@ export default function ApplicationDetail() {
         events: [...application.events, event].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
       };
       await updateApplication(updated);
-      // Refetch fresh data from server
-      invalidateApplicationsCache();
+      // Fetch fresh data from server
       const freshApp = await getApplicationById(application.id);
       if (freshApp) {
         setApplication(freshApp);
@@ -186,8 +183,7 @@ export default function ApplicationDetail() {
         events: application.events.filter(e => e.id !== eventId),
       };
       await updateApplication(updated);
-      // Refetch fresh data from server
-      invalidateApplicationsCache();
+      // Fetch fresh data from server
       const freshApp = await getApplicationById(application.id);
       if (freshApp) {
         setApplication(freshApp);
